@@ -57,9 +57,10 @@ commit() {
                         exit 1
                     fi
                 else
+                    echo
                     branches=()
                     eval "$(git for-each-ref --shell --format='branches+=(%(refname:short))' refs/heads/)"
-                    echo
+                    
                     select branch in "${branches[@]}" "Cancel"; do
                     case $branch in
                     "")
