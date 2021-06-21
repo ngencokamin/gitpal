@@ -35,49 +35,76 @@ ask() {
     done
 }
 
+confirm_push() {
+    current_branch=$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,')
+     while true; do
+        if [ "$current_branch" == "main" ] || [ "$current_branch" == "master" ]; then
+            pushprompt=N
+        else
+            pushprompt=Y
+        fi
+        if ask "Push to branch $current_branch?" "$pushprompt"; then
+            if git push origin "$current_branch"; then
+                printf "\n Changes successfully pushed! Have a nice day :)"
+                exit 0
+            else 
+                git reset HEAD~
+                printf "ERROR! Could not push changes! Aborting."
+                exit 1
+            fi
+        else
+            branch_select
+        fi
+    done
+
+}
+
+branch_select() {
+    
+        echo
+        branches=()
+        eval "$(git for-each-ref --shell --format='branches+=(%(refname:short))' refs/heads/)"
+        select branch in "${branches[@]}" "Create new branch" "Cancel" "Exit"; do
+            case $branch in
+            "")
+                echo "Invalid selection"
+                ;;
+                "Cancel")
+                echo "Branch switching cancelled"
+                return 1;
+                # break
+                ;;
+                "Exit")
+                if ask "Alright, would you like to unstage all files and revert to the latest commit?" Y; then
+                    if git reset HEAD~; then
+                        printf "\nAll changes reverted, have a nice day :)"
+                        exit 0
+                    else
+                        printf "\nERROR! Could not unstage files! Aborting."
+                        exit 1
+                    fi
+                else
+                    printf "\nSure thing, have a nice day :)"
+                        exit 0
+                fi
+                ;;
+                * )
+                echo "Branch $branch selected"
+                current_branch=$branch
+                return 0;
+                ;;
+                    
+            esac
+        done
+}
+
 commit() {
     while true; do
         read -r -p "Please enter a commit message: " msg
         if ask "Does '$msg' look right?" Y; then
             if git commit -m "$msg"; then
                 printf "Succesfully commited changes with message $msg\n"
-                current_branch=$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,')
-                if [ "$current_branch" == "main" ] || [ "$current_branch" == "master" ]; then
-                    pushprompt=N
-                else
-                    pushprompt=Y
-                fi
-                if ask "Push to branch $current_branch?" "$pushprompt"; then
-                    if git push origin "$current_branch"; then
-                        printf "\n Changes successfully pushed! Have a nice day :)"
-                        exit 0
-                    else 
-                        git reset HEAD~
-                        printf "ERROR! Could not push changes! Aborting."
-                        exit 1
-                    fi
-                else
-                    echo
-                    branches=()
-                    eval "$(git for-each-ref --shell --format='branches+=(%(refname:short))' refs/heads/)"
-                    
-                    select branch in "${branches[@]}" "Cancel"; do
-                    case $branch in
-                    "")
-                        echo "Invalid selection"
-                        ;;
-                        "Cancel")
-                        echo "Branch switching cancelled"
-                        # break
-                        ;;
-                        * )
-                        echo "Branch $branch selected"
-                        "$current_branch" = "$branch"
-                        ;;
-                            
-                    esac
-                    done
-                fi
+                confirm_push
 
             else
                 printf "ERROR! Could not commit changes! Aborting."
