@@ -36,8 +36,8 @@ ask() {
 }
 
 confirm_push() {
-    current_branch=$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,')
      while true; do
+        current_branch=$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,')
         if [ "$current_branch" == "main" ] || [ "$current_branch" == "master" ]; then
             pushprompt=N
         else
@@ -72,7 +72,20 @@ branch_select() {
                 "Cancel")
                 echo "Branch switching cancelled"
                 return 1;
-                # break
+                ;;
+                "Create new branch")
+                read -r -p "Alright, what do you want to name this branch? " new_branch
+                if ask "Does '$new_branch' look right?" Y; then
+                    if git checkout -b $new_branch; then
+                        return 0
+                    else
+                        printf "\nERROR! Could not create new branch!"
+                        return 1
+                    fi
+                else
+                    echo
+                fi
+                return 1;
                 ;;
                 "Exit")
                 if ask "Alright, would you like to unstage all files and revert to the latest commit?" Y; then
@@ -90,7 +103,7 @@ branch_select() {
                 ;;
                 * )
                 echo "Branch $branch selected"
-                current_branch=$branch
+                git checkout $branch
                 return 0;
                 ;;
                     
