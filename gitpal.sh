@@ -77,6 +77,7 @@ branch_select() {
                 read -r -p "Alright, what do you want to name this branch? " new_branch
                 if ask "Does '$new_branch' look right?" Y; then
                     if git checkout -b $new_branch; then
+                        echo
                         return 0
                     else
                         printf "\nERROR! Could not create new branch!"
