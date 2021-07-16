@@ -1,4 +1,4 @@
-# Gitpal
+# GitPal
 
 ## Explanation
 
