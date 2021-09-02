@@ -206,11 +206,14 @@ select choice in "Pull" "Push" "Rebase and Squash commits" "View Status" "View C
                     exit 1
                 fi
                 printf "Reminder, use 'f' (fixup) to squash commits and discard the commit messages\n"
+                export EDITOR="vim"
                 if git rebase -i HEAD~$commits; then
                     if ask "Would you like to push your changes to $current_branch?" Y; then
                         git push --force origin $current_branch
+                        printf "\nChanges pushed, have a nice day! :)\n"
+                        exit 0
                     else
-                        printf "Alright, have a nice day! :)\n"
+                        printf "\nAlright, have a nice day! :)\n"
                         exit 0
                     fi
                 else
