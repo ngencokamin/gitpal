@@ -147,17 +147,79 @@ commit() {
     done
 }
 
-printf "Hi there!\n" 
-pwd
-if ask "Is this the directory you would like to push?" Y; then
-    if git add -A ; then
-        printf "Files added!\n"
-        commit
+push() {
+    pwd
+    if ask "Is this the directory you would like to push?" Y; then
+        if git add -A ; then
+            printf "Files added!\n"
+            commit
+        else
+            printf "ERROR! Could not add files! Aborting."
+            exit 1
+        fi
     else
-        printf "ERROR! Could not add files! Aborting."
-        exit 1
+        printf "\nPlease navigate to the correct directory and try again"
+        exit 0
     fi
-else
-    printf "\nPlease navigate to the correct directory and try again"
-    exit 0
-fi
+}
+
+pull() {
+    while true; do
+        if ask "Pull from branch $current_branch?" Y; then
+            git pull origin $current_branch
+        else
+            printf "\nAlright, have a nice day! :)\n"
+            exit 0
+        fi
+    done
+}
+
+current_branch=$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,')
+printf "Hi there!\n" 
+printf "What would you like to do today? :)\n"
+select choice in "Pull" "Push" "Rebase and Squash commits" "View Status" "View Commits" "Exit"; do
+            case $choice in
+                "")
+                echo "Invalid selection"
+                ;;
+                "Exit")
+                printf "Alright, have a nice day! :)\n"
+                exit 0
+                ;;
+                "View Status")
+                git status
+                ;;
+                "View Commits")
+                git log
+                exit 0
+                ;;
+                "Push")
+                push
+                ;;
+                "Pull")
+                pull
+                ;;
+                "Rebase and Squash commits" )
+                read -r -p "Alright, what is the total number of commits you would like to squash? " commits
+                if [[ ! $commits =~ ^[0-9]+$ ]] ; then
+                    echo "ERROR: input must be a number"
+                    exit 1
+                fi
+                printf "Reminder, use 'f' (fixup) to squash commits and discard the commit messages\n"
+                export EDITOR="vim"
+                if git rebase -i HEAD~$commits; then
+                    if ask "Would you like to push your changes to $current_branch?" Y; then
+                        git push --force origin $current_branch
+                        printf "\nChanges pushed, have a nice day! :)\n"
+                        exit 0
+                    else
+                        printf "\nAlright, have a nice day! :)\n"
+                        exit 0
+                    fi
+                else
+                    exit 1
+                fi
+                ;;
+                    
+            esac
+        done
