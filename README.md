@@ -6,11 +6,13 @@ Not long ago, a friend was involved in a group project. Their group mates were c
 
 ## Demo
 
-![GitPal Demo](gitpal.gif)
+![GitPal Home](Screenshots/sc1.png)
+
+![GitPal Push Demo](Screenshots/push.gif)
 
 ## Installation
 
-For now, just run the script. Can add an alias for it if you want. I intend to add a script to automate the process soon.
+For now, just run the script. Can add an alias for it if you want. 
 
 ## Features
 
@@ -22,8 +24,5 @@ For now, just run the script. Can add an alias for it if you want. I intend to a
 - Commit message confirmation to avoid typos
 - Branch switching in cli
 - Create new branch in cli
-
-## Todo
-
-- Install script for easier usage
-- --no-conf flag, can be passed in on running gitpal or set as default through installer script (will still require confirmation for pushing to main, I draw the line at that level of danger)
+- Check file status, commit logs
+- Rebase and squash commits interactively
