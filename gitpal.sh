@@ -53,7 +53,20 @@ confirm_push() {
                 exit 1
             fi
         else
-            branch_select
+            if ask "Would you like to cancel your push and exit?" Y; then
+                if ask "Alright, would you like to unstage all files and revert to the latest commit?" Y; then
+                    if git reset HEAD~; then
+                        printf "\nAll changes reverted, have a nice day :)"
+                        exit 0
+                    else
+                        printf "\nERROR! Could not unstage files! Aborting."
+                        exit 1
+                    fi
+                else
+                    printf "\nSure thing, have a nice day :)"
+                        exit 0
+                fi
+            fi
         fi
     done
 
@@ -89,18 +102,8 @@ branch_select() {
                 return 1;
                 ;;
                 "Exit")
-                if ask "Alright, would you like to unstage all files and revert to the latest commit?" Y; then
-                    if git reset HEAD~; then
-                        printf "\nAll changes reverted, have a nice day :)"
-                        exit 0
-                    else
-                        printf "\nERROR! Could not unstage files! Aborting."
-                        exit 1
-                    fi
-                else
-                    printf "\nSure thing, have a nice day :)"
-                        exit 0
-                fi
+                printf "Alright, have a nice day! :)\n"
+                exit 0
                 ;;
                 * )
                 echo "Branch $branch selected"
@@ -177,7 +180,7 @@ pull() {
 current_branch=$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,')
 printf "Hi there!\n" 
 printf "What would you like to do today? :)\n"
-select choice in "Pull" "Push" "Rebase and Squash commits" "View Status" "View Commits" "Exit"; do
+select choice in "Pull" "Push" "Change Current Branch" "Rebase and Squash commits" "View Status" "View Commits" "Exit"; do
             case $choice in
                 "")
                 echo "Invalid selection"
@@ -198,6 +201,9 @@ select choice in "Pull" "Push" "Rebase and Squash commits" "View Status" "View C
                 ;;
                 "Pull")
                 pull
+                ;;
+                "Change Current Branch")
+                branch_select
                 ;;
                 "Rebase and Squash commits" )
                 read -r -p "Alright, what is the total number of commits you would like to squash? " commits
